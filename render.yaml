@@ -1,20 +1,16 @@
 services:
-  # Private MariaDB service.  This service runs the database used by SuiteCRM.
+  # Private MariaDB service. This service runs the database used by SuiteCRM.
   - type: pserv
     name: suitecrm-db
     runtime: docker
     plan: starter
-    # Expose the standard MariaDB port internally so the SuiteCRM service can
-    # connect over the private network.  The port value must match the one
-    # expected by the bitnami/mariadb image (3   port: 3306
     image:
       url: docker.io/bitnami/mariadb:latest
     envVars:
       # Generate a secure root password automatically when deploying.
-    
       - key: MARIADB_ROOT_PASSWORD
         generateValue: true
-      # Name of the database to create for SuiteCRM.  Keep this in sync
+      # Name of the database to create for SuiteCRM. Keep this in sync
       # with SUITECRM_DATABASE_NAME in the SuiteCRM service below.
       - key: MARIADB_DATABASE
         value: suitecrm_db
@@ -24,55 +20,23 @@ services:
       # Generate the password for the non‑root user.
       - key: MARIADB_PASSWORD
         generateValue: true
-      # Allow empty passwords during initialisation.  For production
-      # deployments you should remove this or set to "no".
+      # Allow empty passwords during initialisation. For production deployments you should remove this or set to "no".
       - key: ALLOW_EMPTY_PASSWORD
         value: "yes"
-    # Attach a persistent disk to persist the database data across deploys and
-    # restarts.  10 GB is sufficient for an MVP deployment and can be
-    # increased later if needed.
     disk:
       name: suitecrm-db-data
       mountPath: /bitnami/mariadb
       sizeGB: 10
 
-  # Web service running the SuiteCRM application.  This service depends on
-  # the database defined above and pulls the upstream SuiteCRM image from
-  # Docker Hub.  It exposes port 8080 publicly and attaches a persistent disk
-  # for uploaded files and customisations.
+  # Web service running the SuiteCRM application.
   - type: web
     name: suitecrm
     runtime: docker
     plan: starter
-    # Use the latest Bitnami SuiteCRM image.  Render will automatically pull
-    # this image from Docker Hub on deploy.
     image:
       url: docker.io/bitnami/suitecrm:latest
-    # Expose the application on port 8080.  Render will automatically
-    # provision a public URL with HTTPS.
-   
     envVars:
       # Configure SuiteCRM to connect to the MariaDB service defined above.
-  - key: SUITECRM_DATABASE_USER
-    fromService:
-      type: pserv
-      name: suitecrm-db
-      envVarKey: MARIADB_USER
-  - key: SUITECRM_DATABASE_PASSWORD
-    fromService:
-      type: pserv
-      name: suitecrm-db
-      envVarKey: MARIADB_PASSWORD
-  # Set up the initial administrator credentials for SuiteCRM. You can override these values in the Render Dashboard if preferred.
-  - key: SUITECRM_USERNAME
-    value: admin
-  - key: SUITECRM_PASSWORD
-    generateValue: true
-  - key: SUITECRM_EMAIL
-    value: admin@example.com
-  # Allow empty passwords when the container starts. Remove this in production and set secure values instead.
-  - key: ALLOW_EMPTY_PASSWORD
-    value: "yes"
       - key: SUITECRM_DATABASE_HOST
         fromService:
           type: pserv
@@ -88,43 +52,26 @@ services:
           type: pserv
           name: suitecrm-db
           envVarKey: MARIADB_DATABASE
-      
-  - key: SUITECRM_DATABASE_USER
-    fromService:
-      type: pserv
-      name: suitecrm-db
-      envVarKey: MARIADB_USER
-  - key: SUITECRM_DATABASE_PASSWORD
-    fromService:
-      type: pserv
-      name: suitecrm-db
-      envVarKey: MARIADB_PASSWORD
-          - key: SUITECRM_DATABASE_USER
-    fromService:
-      type: pserv
-  - key: SUITECRM_DATABASE_USER
-    fromService:
-      type: pserv
-      name: suitecrm-db
-      envVarKey: MARIADB_USER
-name: suitecrm-db
-      envVarKey: MARIADB_USER
-
+      - key: SUITECRM_DATABASE_USER
+        fromService:
           type: pserv
           name: suitecrm-db
           envVarKey: MARIADB_USER
       - key: SUITECRM_DATABASE_PASSWORD
+        fromService:
+          type: pserv
+          name: suitecrm-db
+          envVarKey: MARIADB_PASSWORD
+      # Administrator credentials for SuiteCRM (override these in Render Dashboard if needed)
+      - key: SUITECRM_USERNAME
         value: admin
       - key: SUITECRM_PASSWORD
         generateValue: true
       - key: SUITECRM_EMAIL
         value: admin@example.com
-      # Allow empty passwords when the container starts.  Remove this in
-      # production and set secure values instead.
+      # Allow empty passwords when the container starts. Remove this in production and set secure values instead.
       - key: ALLOW_EMPTY_PASSWORD
         value: "yes"
-    # Persist application files and uploads.  Without a disk the app would
-    # reset on each deployment.  Increase the size as your data grows.
     disk:
       name: suitecrm-data
       mountPath: /bitnami/suitecrm
