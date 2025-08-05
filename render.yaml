@@ -1,5 +1,4 @@
 services:
-  # Private MariaDB service. This service runs the database used by SuiteCRM.
   - type: pserv
     name: suitecrm-db
     runtime: docker
@@ -7,20 +6,14 @@ services:
     image:
       url: docker.io/bitnami/mariadb:latest
     envVars:
-      # Generate a secure root password automatically when deploying.
       - key: MARIADB_ROOT_PASSWORD
         generateValue: true
-      # Name of the database to create for SuiteCRM. Keep this in sync
-      # with SUITECRM_DATABASE_NAME in the SuiteCRM service below.
       - key: MARIADB_DATABASE
         value: suitecrm_db
-      # Create a non‑root user for the SuiteCRM application.
       - key: MARIADB_USER
         value: suitecrm_user
-      # Generate the password for the non‑root user.
       - key: MARIADB_PASSWORD
         generateValue: true
-      # Allow empty passwords during initialisation. For production deployments you should remove this or set to "no".
       - key: ALLOW_EMPTY_PASSWORD
         value: "yes"
     disk:
@@ -28,7 +21,6 @@ services:
       mountPath: /bitnami/mariadb
       sizeGB: 10
 
-  # Web service running the SuiteCRM application.
   - type: web
     name: suitecrm
     runtime: docker
@@ -36,17 +28,13 @@ services:
     image:
       url: docker.io/bitnami/suitecrm:latest
     envVars:
-      # Configure SuiteCRM to connect to the MariaDB service defined above.
       - key: SUITECRM_DATABASE_HOST
         fromService:
           type: pserv
           name: suitecrm-db
           property: host
       - key: SUITECRM_DATABASE_PORT_NUMBER
-        fromService:
-          type: pserv
-          name: suitecrm-db
-          property: port
+        value: "3306"
       - key: SUITECRM_DATABASE_NAME
         fromService:
           type: pserv
@@ -62,14 +50,12 @@ services:
           type: pserv
           name: suitecrm-db
           envVarKey: MARIADB_PASSWORD
-      # Administrator credentials for SuiteCRM (override these in Render Dashboard if needed)
       - key: SUITECRM_USERNAME
         value: admin
       - key: SUITECRM_PASSWORD
         generateValue: true
       - key: SUITECRM_EMAIL
         value: admin@example.com
-      # Allow empty passwords when the container starts. Remove this in production and set secure values instead.
       - key: ALLOW_EMPTY_PASSWORD
         value: "yes"
     disk:
