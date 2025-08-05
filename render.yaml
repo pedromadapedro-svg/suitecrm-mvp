@@ -6,8 +6,7 @@ services:
     plan: starter
     # Expose the standard MariaDB port internally so the SuiteCRM service can
     # connect over the private network.  The port value must match the one
-    # expected by the bitnami/mariadb image (3306).
-    port: 3306
+    # expected by the bitnami/mariadb image (3   port: 3306
     image:
       url: docker.io/bitnami/mariadb:latest
     envVars:
