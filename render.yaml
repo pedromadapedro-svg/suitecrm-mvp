@@ -49,7 +49,7 @@ services:
       url: docker.io/bitnami/suitecrm:latest
     # Expose the application on port 8080.  Render will automatically
     # provision a public URL with HTTPS.
-    port: 8080
+   
     envVars:
       # Configure SuiteCRM to connect to the MariaDB service defined above.
       - key: SUITECRM_DATABASE_HOST
@@ -67,7 +67,7 @@ services:
           type: pserv
           name: suitecrm-db
           envVarKey: MARIADB_DATABASE
-      - key: SUITECRM_DATABASE_USER
+      
         fromService:
           type: pserv
           name: suitecrm-db
