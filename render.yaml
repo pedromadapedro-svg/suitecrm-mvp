@@ -11,6 +11,7 @@ services:
       url: docker.io/bitnami/mariadb:latest
     envVars:
       # Generate a secure root password automatically when deploying.
+    
       - key: MARIADB_ROOT_PASSWORD
         generateValue: true
       # Name of the database to create for SuiteCRM.  Keep this in sync
@@ -52,6 +53,26 @@ services:
    
     envVars:
       # Configure SuiteCRM to connect to the MariaDB service defined above.
+  - key: SUITECRM_DATABASE_USER
+    fromService:
+      type: pserv
+      name: suitecrm-db
+      envVarKey: MARIADB_USER
+  - key: SUITECRM_DATABASE_PASSWORD
+    fromService:
+      type: pserv
+      name: suitecrm-db
+      envVarKey: MARIADB_PASSWORD
+  # Set up the initial administrator credentials for SuiteCRM. You can override these values in the Render Dashboard if preferred.
+  - key: SUITECRM_USERNAME
+    value: admin
+  - key: SUITECRM_PASSWORD
+    generateValue: true
+  - key: SUITECRM_EMAIL
+    value: admin@example.com
+  # Allow empty passwords when the container starts. Remove this in production and set secure values instead.
+  - key: ALLOW_EMPTY_PASSWORD
+    value: "yes"
       - key: SUITECRM_DATABASE_HOST
         fromService:
           type: pserv
@@ -68,18 +89,31 @@ services:
           name: suitecrm-db
           envVarKey: MARIADB_DATABASE
       
-        fromService:
+  - key: SUITECRM_DATABASE_USER
+    fromService:
+      type: pserv
+      name: suitecrm-db
+      envVarKey: MARIADB_USER
+  - key: SUITECRM_DATABASE_PASSWORD
+    fromService:
+      type: pserv
+      name: suitecrm-db
+      envVarKey: MARIADB_PASSWORD
+          - key: SUITECRM_DATABASE_USER
+    fromService:
+      type: pserv
+  - key: SUITECRM_DATABASE_USER
+    fromService:
+      type: pserv
+      name: suitecrm-db
+      envVarKey: MARIADB_USER
+name: suitecrm-db
+      envVarKey: MARIADB_USER
+
           type: pserv
           name: suitecrm-db
           envVarKey: MARIADB_USER
       - key: SUITECRM_DATABASE_PASSWORD
-        fromService:
-          type: pserv
-          name: suitecrm-db
-          envVarKey: MARIADB_PASSWORD
-      # Set up the initial administrator credentials for SuiteCRM.  You can
-      # override these values in the Render Dashboard if preferred.
-      - key: SUITECRM_USERNAME
         value: admin
       - key: SUITECRM_PASSWORD
         generateValue: true
