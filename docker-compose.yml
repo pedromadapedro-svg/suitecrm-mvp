@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: bitnami/mariadb:latest
+    environment:
+      # Root user password for the MariaDB instance
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD:-bitnami_root_password}
+      # Database to be created for SuiteCRM
+      - MARIADB_DATABASE=${SUITECRM_DATABASE_NAME:-suitecrm_db}
+      # Username and password used by SuiteCRM to connect to the database
+      - MARIADB_USER=${MARIADB_USER:-suitecrm_user}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD:-suitecrm_password}
+      # Allow empty passwords in development (set to "yes" for Render).  Do **not**
+      # use this in production without proper secrets management.
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
+    volumes:
+      # Persist MariaDB data between container restarts
+      - mariadb_data:/bitnami/mariadb
+    networks:
+      - suitecrm_network
+
+  suitecrm:
+    image: bitnami/suitecrm:latest
+    environment:
+      # Connection information for SuiteCRM to talk to the database.  When
+      # running locally via docker‑compose the host name is the service name
+      # defined above (`mariadb`).  On Render this is injected from render.yaml.
+      - SUITECRM_DATABASE_HOST=${SUITECRM_DATABASE_HOST:-mariadb}
+      - SUITECRM_DATABASE_PORT_NUMBER=${SUITECRM_DATABASE_PORT_NUMBER:-3306}
+      - SUITECRM_DATABASE_NAME=${SUITECRM_DATABASE_NAME:-suitecrm_db}
+      - SUITECRM_DATABASE_USER=${MARIADB_USER:-suitecrm_user}
+      - SUITECRM_DATABASE_PASSWORD=${MARIADB_PASSWORD:-suitecrm_password}
+      # Administrative user for SuiteCRM.  Adjust these values if you would like
+      # a custom username/password.  You should change these in production.
+      - SUITECRM_USERNAME=${SUITECRM_USERNAME:-admin}
+      - SUITECRM_PASSWORD=${SUITECRM_PASSWORD:-admin123}
+      - SUITECRM_EMAIL=${SUITECRM_EMAIL:-admin@example.com}
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
+    ports:
+      # Expose SuiteCRM on port 8080 on the host
+      - "8080:8080"
+    volumes:
+      # Persist SuiteCRM application and uploaded files
+      - suitecrm_data:/bitnami/suitecrm
+    depends_on:
+      - mariadb
+    networks:
+      - suitecrm_network
+
+volumes:
+  mariadb_data:
+    driver: local
+  suitecrm_data:
+    driver: local
+
+networks:
+  suitecrm_network:
+    driver: bridge
